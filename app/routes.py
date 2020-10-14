@@ -119,8 +119,11 @@ def receive_message():
                                 if image_paths:
                                     sg_images_resize(image_paths, 1080)
                                     # send images
-                                    [bot.send_image(recipient_id, str(image_path))
-                                     for image_path in image_paths]
+                                    for image_path in image_paths:
+                                        bot.send_image(
+                                            recipient_id, str(image_path))
+                                        print('sended Image')
+
                                     send_message(
                                         recipient_id, f"""Should I paste suitable quotes on the images? 👩‍💻 Then write: {quote_command}""")
 

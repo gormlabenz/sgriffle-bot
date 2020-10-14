@@ -142,5 +142,6 @@ cython_debug/
 test.py
 
 #folders
-pics/
+pics/*/**
+config/
 00_history/
