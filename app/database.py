@@ -26,6 +26,7 @@ def check_user(recipient_id):
                 new_requests.append(user_request)
         if len(new_requests) > 8:
             return True
+    return False
 
 
 def get_topic(recipient_id):

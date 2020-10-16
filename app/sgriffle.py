@@ -9,6 +9,7 @@ from PIL import Image, ImageFont, ImageDraw
 from app.image_utils import ImageText
 import csv
 from pymessenger.bot import Bot
+from app.messenger import *
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -246,11 +247,7 @@ def sg_paste_quote(image_path, text_place, quot, font_size, font, font_author, f
     print(f'Saved photo')
 
 
-if __name__ == "__main__":
-    sg_mkdir('1')
-    image_paths = sg_download_imgages('hate', '1')
-    print(image_paths)
-    sg_images_resize(image_paths, size)
-    quote = {'quote': 'Hurray, finaaly we did it!', 'author': 'Gorm Labenz'}
-    [sg_paste_quote(str(image_path), 'left', quote, font_size,
-                    font, font_author, font_color) for image_path in image_paths]
+def sg_edit_images(recipient_id, topic):
+    image_urls = sg_get_images(topic)
+    if not image_urls:
+        send_message

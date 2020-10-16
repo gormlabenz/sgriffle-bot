@@ -3,8 +3,10 @@ import time
 from app.sgriffle import *
 from app.models import *
 from app.database import *
-from app import app, bot
+from app.messenger import *
+from app import app
 from flask import request
+
 
 font = 'Ubuntu-Medium.ttf'
 font_author = 'Ubuntu-RegularItalic.ttf'
@@ -87,7 +89,7 @@ def receive_message():
                                         # send new images
                                         try:
                                             for image_path in quotes_image_path:
-                                                bot.send_image(
+                                                send_image(
                                                     recipient_id, str(image_path))
                                                 print('sending quote image')
 
@@ -120,7 +122,7 @@ def receive_message():
                                     sg_images_resize(image_paths, 1080)
                                     # send images
                                     for image_path in image_paths:
-                                        bot.send_image(
+                                        send_image(
                                             recipient_id, str(image_path))
                                         print('sended Image')
 
@@ -144,25 +146,42 @@ def receive_message():
         return "Error"
 
 
+@app.route("/test", methods=['GET', 'POST'])
+def receive_message_test():
+    print(f'Output: {request}')
+
+    if request.method == 'GET':
+        """Before allowing people to message your bot, Facebook has implemented a verify token
+        that confirms all requests that your bot receives came from Facebook."""
+        token_sent = request.args.get("hub.verify_token")
+        return verify_fb_token(token_sent)
+    # if the request was not get, it must be POST and we can just proceed with sending a message back to user
+    else:
+        # get whatever message a user sent the bot
+        output = request.get_json()
+        for event in output['entry']:
+            messaging = event['messaging']
+            for message in messaging:
+                input_message = message['message']['text']
+                recipient_id = message['recipient']['id']
+
+                message_check = check_input_message(
+                    recipient_id, input_message)
+
+                if message_check['callback_message']:
+                    send_message(
+                        recipient_id, message_check['callback_message'])
+
+                if message_check['type'] == 'valid':
+                    sg_edit_images(recipient_id, input_message)
+
+                print(message_check, flush=True)
+    return "Message Processed"
+
+
 def verify_fb_token(token_sent):
     # take token sent by facebook and verify it matches the verify token you sent
     # if they match, allow the request, else return an error
     if token_sent == VERIFY_TOKEN:
         return request.args.get("hub.challenge")
     return 'Invalid verification token'
-
-
-# chooses a random message to send to the user
-def get_message():
-    sample_responses = ["You are stunning!", "We're proud of you.",
-                        "Keep on being you!", "We're greatful to know you :)"]
-    # return selected item to the user
-    return random.choice(sample_responses)
-
-# uses PyMessenger to send response to user
-
-
-def send_message(recipient_id, response):
-    # sends user the text message provided via input response parameter
-    bot.send_text_message(recipient_id, response)
-    return "success"
