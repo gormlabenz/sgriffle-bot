@@ -51,8 +51,8 @@ def receive_message():
                                 print("Duplicate request")
                                 return "Duplicate Request"
 
-                            add_user(recipient_id,
-                                     message, message_object.get('timestamp'))
+                            insert_user(recipient_id,
+                                        message, message_object.get('timestamp'))
 
                             # Welcomes message
                             send_message(
@@ -148,7 +148,6 @@ def receive_message():
 
 @app.route("/test", methods=['GET', 'POST'])
 def receive_message_test():
-    print(f'Output: {request}')
 
     if request.method == 'GET':
         """Before allowing people to message your bot, Facebook has implemented a verify token
@@ -168,14 +167,17 @@ def receive_message_test():
                 message_check = check_input_message(
                     recipient_id, input_message)
 
+                if message_check['type'] != 'invalide':
+                    insert_user(recipient_id, input_message,
+                                message['timestamp'])
+
                 if message_check['callback_message']:
                     send_message(
                         recipient_id, message_check['callback_message'])
 
-                if message_check['type'] == 'valid':
+                if message_check['type'] == 'valide':
                     sg_edit_images(recipient_id, input_message)
 
-                print(message_check, flush=True)
     return "Message Processed"
 
 

@@ -21,3 +21,4 @@ bot = Bot(ACCESS_TOKEN)
 
 
 from app import routes
+from app.commands import *

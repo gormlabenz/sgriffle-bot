@@ -1,17 +1,19 @@
 from app import db
 from app.models import *
 import time
+import os
 
 
-def add_user(recipient_id, message, tim):
+def insert_user(recipient_id, input_message, timestamp):
+
     user = User(id=recipient_id,
-                topic=message, time=tim)
+                topic=input_message, timestamp=timestamp)
     db.session.add(user)
     db.session.commit()
 
 
-def check_request(recipient_id, time):
-    query = User.query.filter_by(id=recipient_id, time=time).all()
+def check_request(recipient_id, timestamp):
+    query = User.query.filter_by(id=recipient_id, timestamp=timestamp).all()
     if query:
         return True
 
@@ -22,9 +24,9 @@ def check_user(recipient_id):
     if user_requests:
         new_requests = []
         for user_request in user_requests:
-            if time.time() - user_request.time < 259200:
+            if time.time() - user_request.timestamp < int(os.getenv('TIME_TILL_RESET')):
                 new_requests.append(user_request)
-        if len(new_requests) > 8:
+        if len(new_requests) > int(os.getenv('MAX_REQUESTS')):
             return True
     return False
 

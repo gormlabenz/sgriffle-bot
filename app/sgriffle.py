@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from flask.helpers import send_file
 import pyunsplash
 import requests
 import multiprocessing
@@ -10,11 +11,12 @@ from app.image_utils import ImageText
 import csv
 from pymessenger.bot import Bot
 from app.messenger import *
+import itertools
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
-size = 1080
+size = int(os.getenv('IMAGE_SIZE'))
 
 
 description = True  # make a file with hashtags and descriptio
@@ -26,8 +28,8 @@ count = 100
 logo_size = 64  # size of the log
 logo_dis = 96  # distance of the logog to the edge in p
 logo = '/Volumes/SHARED/Python/content-generator/pics/00_default/logo.JPG'
-font = 'Ubuntu-Medium.ttf'
-font_author = 'Ubuntu-RegularItalic.ttf'
+font = str(Path.cwd() / 'fonts' / 'Ubuntu-Medium.ttf')
+font_author = str(Path.cwd() / 'fonts' / 'Ubuntu-RegularItalic.ttf')
 font_size = 48
 font_color = (200, 200, 200)
 text_place = 'center'
@@ -37,9 +39,14 @@ pu = pyunsplash.PyUnsplash(
     api_key=os.getenv('UNSPLASH_API_KEY'))
 
 
-def sg_mkdir(user_id):
+def sg_get_user_path(recipient_id):
+    "returns path of user folder as PosixPath"
+    return Path.cwd() / 'pics' / str(recipient_id)
+
+
+def sg_mkdir(recipient_id):
     "make dir for user"
-    path = Path.cwd() / 'pics' / str(user_id)
+    path = sg_get_user_path(recipient_id)
     if path.is_dir():
         print(path.glob('**/*'))
         [Path.unlink(file) for file in path.glob('**/*')]
@@ -56,24 +63,28 @@ def sg_get_images(topic):
     return images.entries
 
 
-def sg_download_imgage(downloadlink, image_path):
+def sg_download_imgage(recipient_id, image):
     "save img in user folder"
 
-    image = requests.get(downloadlink)
-    open(image_path, 'wb').write(image.content)
+    image_data = requests.get(image.link_download)
+    image_path = sg_get_user_path(recipient_id) / f'{image.id}.png'
+
+    open(image_path, 'wb').write(image_data.content)
+
+    return image_path
 
 
-def sg_download_imgages(topic, user_id):
+def sg_download_imgages(topic, recipient_id):
     "Bulk download images via multiprocessing"
 
     processes = []
     image_paths = []
     images = sg_get_images(topic)
 
-    sg_mkdir(user_id)
+    sg_mkdir(recipient_id)
 
     for image in images:
-        image_path = Path.cwd() / 'pics' / user_id / f'{image.id}.png'
+        image_path = Path.cwd() / 'pics' / recipient_id / f'{image.id}.png'
         process = multiprocessing.Process(target=sg_download_imgage, args=[
                                           image.link_download, image_path])
         process.start()
@@ -115,7 +126,8 @@ def sg_image_resize(image_path, size):
     height = int(height)
     image = image.resize((width, height))
     image = image.crop(box)
-    image.save(image_path, 'JPEG')
+    #image.save(f'{image_path}.edited.png', 'PNG')
+    return image
 
 
 def sg_images_resize(image_paths, size):
@@ -148,18 +160,15 @@ def sg_get_quotes(topic):
     return quotes
 
 
-def sg_paste_gradient(image_path):
+def sg_paste_gradient(image,):
     "paste gradient into a image"
     gradient = Image.open(Path.cwd() / 'templates' / 'gradient.png')
-    image = Image.open(image_path)
-
-    gradient = gradient.resize((image.size))
     image.paste(gradient, (0, 0), gradient)
 
     return image
 
 
-def sg_place_quote(quot, text_place):
+def sg_place_quote(quot, text_place, image_path):
     quote = quot['quote']
     author = quot['author']
 
@@ -206,24 +215,25 @@ def sg_place_quote(quot, text_place):
         text_img.write_text_box((name_x, name_y), author, box_width=text_width, font_filename=font_author,
                                 font_size=int(font_size/2), color=font_color, place='right')
 
+    text_img_path = f'{image_path}.text.png'
+    text_img.save(text_img_path)
+    text_img = Image.open(text_img_path)
+    os.remove(text_img_path)
+
     return text_img
 
 
-def sg_quote_image(image_path, text_place, quot, font_size, font, font_author, font_color):
+def sg_quote_image(image_path, text_place, quot):
     # place text
     text_img = sg_place_quote(quot, text_place)
-
-    text_path = image_path + '.text.png'
-    text_img.save(text_path)
-
-    return text_path
+    return text_img
 
 
-def sg_paste_quote(image_path, text_place, quot, font_size, font, font_author, font_color):
+def sg_paste_quote(image_path, text_place, quot):
     # define variables
 
-    text_img = sg_quote_image(image_path, text_place,
-                              quot, font_size, font, font_author, font_color)
+    text_img = sg_place_quote(quot, text_place)
+    image.paste(text_img, [(0, 0), (size, size)], text_img)
 
     # text_img.save(image_path)
     # gradient
@@ -231,7 +241,6 @@ def sg_paste_quote(image_path, text_place, quot, font_size, font, font_author, f
     image = sg_paste_gradient(image_path)
     # paste text
     text_img = Image.open(text_img)
-    image.paste(text_img, (0, 0, size, size), text_img)
     image.save(image_path)
 
     """ # paste logo
@@ -247,7 +256,39 @@ def sg_paste_quote(image_path, text_place, quot, font_size, font, font_author, f
     print(f'Saved photo')
 
 
+def sg_edit_image(recipient_id, image, quote):
+    "Edits image in a row"
+    image_path = sg_download_imgage(recipient_id, image)
+    image = sg_image_resize(image_path, int(os.getenv('IMAGE_SIZE')))
+    image = sg_paste_gradient(image)
+    text_img = sg_place_quote(quote, text_place, image_path)
+    image.paste(text_img, (0, 0), text_img)
+    edited_image_path = f'{image_path}.edited.png'
+    image.save(edited_image_path, 'PNG')
+
+    send_file(recipient_id, edited_image_path)
+
+
 def sg_edit_images(recipient_id, topic):
-    image_urls = sg_get_images(topic)
-    if not image_urls:
-        send_message
+    images = sg_get_images(topic)
+    quotes = sg_get_quotes(topic)
+
+    if not images:
+        send_message(
+            recipient_id, """Sorry, I didn't find enough images :( Try another more general topic!""")
+        return "Not enough images"
+
+    sg_mkdir(recipient_id)
+
+    processes = []
+    for image, quote in itertools.zip_longest(list(images), quotes):
+        if not image:
+            return "edited all images"
+        process = multiprocessing.Process(
+            target=sg_edit_image, args=[recipient_id, image, quote])
+        process.start()
+        processes.append(process)
+
+    [process.join() for process in processes]
+
+    return "Edited Images "
