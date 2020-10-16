@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -6,10 +5,9 @@ from flask.helpers import send_file
 import pyunsplash
 import requests
 import multiprocessing
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image
 from app.image_utils import ImageText
 import csv
-from pymessenger.bot import Bot
 from app.messenger import *
 import itertools
 
@@ -74,31 +72,6 @@ def sg_download_imgage(recipient_id, image):
     return image_path
 
 
-def sg_download_imgages(topic, recipient_id):
-    "Bulk download images via multiprocessing"
-
-    processes = []
-    image_paths = []
-    images = sg_get_images(topic)
-
-    sg_mkdir(recipient_id)
-
-    for image in images:
-        image_path = Path.cwd() / 'pics' / recipient_id / f'{image.id}.png'
-        process = multiprocessing.Process(target=sg_download_imgage, args=[
-                                          image.link_download, image_path])
-        process.start()
-        processes.append(process)
-        image_paths.append(image_path)
-
-    [process.join() for process in processes]
-
-    if image_paths:
-        return image_paths
-    else:
-        return logging.warning('Not enough images')
-
-
 def sg_image_proportion(value, input, size):
     "get width and height proportions"
 
@@ -128,20 +101,6 @@ def sg_image_resize(image_path, size):
     image = image.crop(box)
     #image.save(f'{image_path}.edited.png', 'PNG')
     return image
-
-
-def sg_images_resize(image_paths, size):
-    "Buld resizing of images"
-
-    processes = []
-
-    for image_path in image_paths:
-        process = multiprocessing.Process(
-            target=sg_image_resize, args=[image_path, size])
-        process.start()
-        processes.append(process)
-
-    [process.join() for process in processes]
 
 
 def sg_get_quotes(topic):
@@ -221,39 +180,6 @@ def sg_place_quote(quot, text_place, image_path):
     os.remove(text_img_path)
 
     return text_img
-
-
-def sg_quote_image(image_path, text_place, quot):
-    # place text
-    text_img = sg_place_quote(quot, text_place)
-    return text_img
-
-
-def sg_paste_quote(image_path, text_place, quot):
-    # define variables
-
-    text_img = sg_place_quote(quot, text_place)
-    image.paste(text_img, [(0, 0), (size, size)], text_img)
-
-    # text_img.save(image_path)
-    # gradient
-    image = Image.open(image_path)
-    image = sg_paste_gradient(image_path)
-    # paste text
-    text_img = Image.open(text_img)
-    image.save(image_path)
-
-    """ # paste logo
-    if self.get('logo_draw'):
-        image.paste(Image.open(self.logo), (0,0,100,100), self.get('logo'))
-    # save image
-    image.save(os.path.join(self.pics, f'{index}.jpg'))
-    # make description file
-    if self.get('description'):
-        self.save_description(index)
-    else:
-        self.description_print = '' """
-    print(f'Saved photo')
 
 
 def sg_edit_image(recipient_id, image, quote):
