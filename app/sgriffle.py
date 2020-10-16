@@ -8,7 +8,7 @@ import multiprocessing
 from PIL import Image, ImageFont, ImageDraw
 from app.image_utils import ImageText
 import csv
-import glob
+from pymessenger.bot import Bot
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
