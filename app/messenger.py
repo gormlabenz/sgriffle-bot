@@ -36,7 +36,7 @@ def check_input_message(recipient_id, input_message):
     if ' ' not in input_message or len(input_message) > 100:
 
         type = 'edit_images'
-        callback_message = None
+        callback_message = f"""Here are the images I generated for you :) If you want to paste quotes by yourself, write "{os.getenv("QUOTE_COMMAND")}" followed by the quote and if you like "{os.getenv("AUTOHOR_COMMAND")}" followed by the author… """
 
     if check_user(recipient_id):
 
