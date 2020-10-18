@@ -32,12 +32,12 @@ def receive_message_test():
                     insert_user(recipient_id, input_message,
                                 message['timestamp'])
 
+                if message_check['type'] == 'edit_images':
+                    sg_edit_images(recipient_id, input_message)
+
                 if message_check['callback_message']:
                     send_message(
                         recipient_id, message_check['callback_message'])
-
-                if message_check['type'] == 'valide':
-                    sg_edit_images(recipient_id, input_message)
 
     return "Message Processed"
 

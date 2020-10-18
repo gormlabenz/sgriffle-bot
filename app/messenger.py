@@ -35,7 +35,7 @@ def check_input_message(recipient_id, input_message):
 
     if ' ' not in input_message or len(input_message) > 100:
 
-        type = 'valide'
+        type = 'edit_images'
         callback_message = None
 
     if check_user(recipient_id):
