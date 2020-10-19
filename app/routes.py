@@ -1,6 +1,8 @@
 from app.messenger import *
+from app.sgriffle import sg_edit_images
 from app import app
 from flask import request
+
 
 VERIFY_TOKEN = os.getenv('VERIFY_TOKEN')
 
@@ -26,7 +28,7 @@ def receive_message_test():
                 recipient_id = message['recipient']['id']
 
                 message_check = check_input_message(
-                    recipient_id, input_message)
+                    recipient_id, input_message, message['timestamp'])
 
                 if message_check['type'] != 'invalide':
                     insert_user(recipient_id, input_message,

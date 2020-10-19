@@ -10,6 +10,7 @@ from app.image_utils import ImageText
 import csv
 from app.messenger import *
 import itertools
+from app import bot
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
@@ -56,7 +57,7 @@ def sg_get_images(topic):
     "get downloadlinks for 3 img for a specific topic"
 
     images = pu.search(
-        type_='photos', query=topic, per_page=3)
+        type_='photos', query=topic, per_page=os.getenv('NUMBER_IMAGES_GENERATED'))
 
     return images.entries
 
@@ -105,10 +106,10 @@ def sg_image_resize(image_path, size):
 
 def sg_get_quotes(topic):
     quotes = []
-    with open(Path.cwd() / 'quotes_en.csv', 'r') as csv_file:
+    with open(Path.cwd() / 'assets' / 'quotes.csv', 'r') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=';')
         for line in csv_reader:
-            if len(quotes) == 3:
+            if len(quotes) == os.getenv('NUMBER_IMAGES_GENERATED'):
                 break
             if line[2] == topic or topic in line[0]:
                 if len(line[0]) < 200:
@@ -121,7 +122,7 @@ def sg_get_quotes(topic):
 
 def sg_paste_gradient(image,):
     "paste gradient into a image"
-    gradient = Image.open(Path.cwd() / 'templates' / 'gradient.png')
+    gradient = Image.open(Path.cwd() / 'assets' / 'gradient.png')
     image.paste(gradient, (0, 0), gradient)
 
     return image
@@ -192,7 +193,8 @@ def sg_edit_image(recipient_id, image, quote):
     edited_image_path = f'{image_path}.edited.png'
     image.save(edited_image_path, 'PNG')
 
-    send_file(recipient_id, edited_image_path)
+    bot.send_image(
+        recipient_id, str(image_path))
 
 
 def sg_edit_images(recipient_id, topic):

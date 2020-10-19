@@ -16,8 +16,6 @@ Pillow==8.0.0
 pluggy==0.13.1
 py==1.9.0
 pycodestyle==2.6.0
-pymessenger==0.0.7.0
-pymessenger2==3.1.0
 pyparsing==2.4.7
 pytest==6.1.1
 pytest-cov==2.10.1

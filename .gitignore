@@ -145,3 +145,4 @@ test.py
 pics/*/**
 config/
 00_history/
+htmlcov/

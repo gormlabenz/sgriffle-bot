@@ -18,7 +18,7 @@ def check_request(recipient_id, timestamp):
         return True
 
 
-def check_user(recipient_id):
+def check_timestamp(recipient_id):
     user_requests = User.query.filter_by(
         id=recipient_id).all()
     if user_requests:
