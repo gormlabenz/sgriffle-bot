@@ -194,7 +194,7 @@ def sg_edit_image(recipient_id, image, quote):
     image.save(edited_image_path, 'PNG')
 
     bot.send_image(
-        recipient_id, str(image_path))
+        recipient_id, str(edited_image_path))
 
 
 def sg_edit_images(recipient_id, topic):
@@ -202,7 +202,7 @@ def sg_edit_images(recipient_id, topic):
     quotes = sg_get_quotes(topic)
 
     if not images:
-        send_message(
+        bot.send_text_message(
             recipient_id, """Sorry, I didn't find enough images :( Try another more general topic!""")
         return "Not enough images"
 
@@ -215,6 +215,7 @@ def sg_edit_images(recipient_id, topic):
         process = multiprocessing.Process(
             target=sg_edit_image, args=[recipient_id, image, quote])
         process.start()
+        # process.join()
         processes.append(process)
 
     [process.join() for process in processes]

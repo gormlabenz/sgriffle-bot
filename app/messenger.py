@@ -37,7 +37,7 @@ def check_input_message(recipient_id, input_message, timestamp):
     if ' ' not in input_message or len(input_message) > 100:
 
         type = 'edit_images'
-        callback_message = f"""Here are the images I generated for you :) If you want to paste quotes by yourself, write "{os.getenv("QUOTE_COMMAND")}" followed by the quote and if you like "{os.getenv("AUTOHOR_COMMAND")}" followed by the author… """
+        callback_message = f"""Here are the images I generated for you :)"""
 
     if check_timestamp(recipient_id):
 
@@ -47,6 +47,11 @@ def check_input_message(recipient_id, input_message, timestamp):
     if os.getenv('QUOTE_COMMAND') in input_message:
 
         type = 'paste-quote'
+        callback_message = None
+
+    if os.getenv('MESSAGE_COMMAND') in input_message:
+
+        type = 'command'
         callback_message = None
 
     if check_request(recipient_id, timestamp):

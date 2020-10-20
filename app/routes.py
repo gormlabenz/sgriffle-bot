@@ -2,6 +2,7 @@ from app.messenger import *
 from app.sgriffle import sg_edit_images
 from app import app
 from flask import request
+import pprint
 
 
 VERIFY_TOKEN = os.getenv('VERIFY_TOKEN')
@@ -23,19 +24,40 @@ def receive_message_test():
         output = request.get_json()
         for event in output['entry']:
             messaging = event['messaging']
-            for message in messaging:
-                input_message = message['message']['text']
-                recipient_id = message['recipient']['id']
+            for message_data in messaging:
+                # return if no text message is send
+                pprint.pprint(message_data)
+                if 'message' not in message_data:
+                    return "No Text Message"
+
+                input_message = message_data['message']['text']
+                recipient_id = message_data['sender']['id']
 
                 message_check = check_input_message(
-                    recipient_id, input_message, message['timestamp'])
+                    recipient_id, input_message, message_data['timestamp'])
 
                 if message_check['type'] != 'invalide':
                     insert_user(recipient_id, input_message,
-                                message['timestamp'])
+                                message_data['timestamp'])
 
                 if message_check['type'] == 'edit_images':
                     sg_edit_images(recipient_id, input_message)
+                    # print(bot.send_button_message(recipient_id, 'What to do next?', [{
+                    #    "type": "postback",
+                    #    "payload": f"""{os.getenv('MESSAGE_COMMAND')}quote""",
+                    #    "title": "Custom Quote"
+                    # },
+                    #    {
+                    #    "type": "postback",
+                    #    "payload": f"""{os.getenv('MESSAGE_COMMAND')}background""",
+                    #    "title": "Background"
+                    # },
+                    #    {
+                    #    "type": "postback",
+                    #    "payload": f"""{os.getenv('MESSAGE_COMMAND')}align""",
+                    #    "title": "Align Text"
+                    # }
+                    # ]))
 
                 if message_check['callback_message']:
                     send_message(
