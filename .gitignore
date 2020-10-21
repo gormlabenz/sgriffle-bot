@@ -147,3 +147,6 @@ config/
 00_history/
 htmlcov/
 database.db
+*.zip
+ngrok
+*.db
