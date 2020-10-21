@@ -32,7 +32,7 @@ def check_input_message(recipient_id, input_message, timestamp):
         """
 
     type = 'invalide'
-    callback_message = 'Hey, if you want to use Sgriffle to generate images, please send me a one general topic, like art, love or human… :)'
+    callback_message = 'Hey, please send me a one general topic, like art, love or human… :)'
 
     if ' ' not in input_message or len(input_message) > 100:
 
@@ -44,15 +44,14 @@ def check_input_message(recipient_id, input_message, timestamp):
         type = 'expired'
         callback_message = """Sorry, you requested too much images… 😭  Try it in three days! If you want more images, you can visit https://sgriffle.com/ ☺️"""
 
-    if os.getenv('QUOTE_COMMAND') in input_message:
-
-        type = 'paste-quote'
-        callback_message = None
-
     if os.getenv('MESSAGE_COMMAND') in input_message:
 
         type = 'command'
         callback_message = None
+
+        if "welcome" in input_message:
+            type = 'welcome command'
+            callback_message = 'Hey, please send me a one general topic, like art, love or human… :)'
 
     if check_request(recipient_id, timestamp):
         type = 'invalide'

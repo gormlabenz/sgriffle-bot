@@ -25,20 +25,30 @@ def receive_message_test():
         for event in output['entry']:
             messaging = event['messaging']
             for message_data in messaging:
+                timestamp = message_data['timestamp']
+
                 # return if no text message is send
                 pprint.pprint(message_data)
-                if 'message' not in message_data:
-                    return "No Text Message"
-
-                input_message = message_data['message']['text']
-                recipient_id = message_data['sender']['id']
+                if 'message' in message_data:
+                    input_message = message_data['message']['text']
+                    recipient_id = message_data['sender']['id']
+                elif 'postback' in message_data:
+                    input_message = message_data['postback']['payload']
+                    recipient_id = message_data['sender']['id']
+                elif 'policy_enforcement' in message_data:
+                    action = message_data['policy_enforcement']['action']
+                    reason = message_data['policy_enforcement']['reason']
+                    insert_policy(action, reason, timestamp)
+                    return "Policy"
+                else:
+                    return "No valid message"
 
                 message_check = check_input_message(
-                    recipient_id, input_message, message_data['timestamp'])
+                    recipient_id, input_message, timestamp)
 
                 if message_check['type'] != 'invalide':
                     insert_user(recipient_id, input_message,
-                                message_data['timestamp'])
+                                timestamp)
 
                 if message_check['type'] == 'edit_images':
                     sg_edit_images(recipient_id, input_message)

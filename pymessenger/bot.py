@@ -8,10 +8,12 @@ from enum import Enum
 from pymessenger.graph_api import FacebookGraphApi
 import pymessenger.utils as utils
 
+
 class NotificationType(Enum):
     regular = "REGULAR"
     silent_push = "SILENT_PUSH"
     no_push = "NO_PUSH"
+
 
 class Bot(FacebookGraphApi):
 
@@ -79,6 +81,28 @@ class Bot(FacebookGraphApi):
         }
         return self.send_raw(payload)
 
+    def send_quick_replies(self, recipient_id, message, quick_replies):
+        '''Send  messages with quicke-replies.
+        https://developers.facebook.com/docs/messenger-platform/reference/buttons/quick-replies
+        Input:
+            recipient_id: recipient id to send to
+            message: raw message to send
+            quick_replies: quick_replies to send
+        Output:
+            Response from API as <dict>
+        '''
+        payload = {
+            'recipient': {
+                'id': recipient_id
+            },
+            "messaging_type": "RESPONSE",
+            'message': {
+                "text": message,
+                "quick_replies": quick_replies
+            }
+        }
+        return self.send_raw(payload)
+
     def send_button_message(self, recipient_id, text, buttons):
         '''Send text messages to the specified recipient.
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/button-template
@@ -106,7 +130,6 @@ class Bot(FacebookGraphApi):
             }
         }
         return self.send_raw(payload)
-
 
     def send_image(self,
                    recipient_id,
@@ -203,11 +226,11 @@ class Bot(FacebookGraphApi):
             'sender_action': action
         }
         return self.send_raw(payload)
-        
+
     def _send_payload(self, payload):
         ''' Deprecated, use send_raw instead '''
         return self.send_raw(payload)
-        
+
     def send_raw(self, payload):
         request_endpoint = '{0}/me/messages'.format(self.graph_url)
         response = requests.post(
@@ -340,7 +363,6 @@ class Bot(FacebookGraphApi):
         }
         return self.send_raw(payload)
 
-
     def send_file(self, recipient_id, file_path):
         '''Send file to the specified recipient.
         https://developers.facebook.com/docs/messenger-platform/send-api-reference/file-attachment
@@ -417,7 +439,7 @@ class Bot(FacebookGraphApi):
             attachment_filename = os.path.basename(attachment_path)
             if attachment_type != 'file':
                 attachment_ext = attachment_filename.split('.')[1]
-                content_type = attachment_type + '/' + attachment_ext # eg: audio/mp3
+                content_type = attachment_type + '/' + attachment_ext  # eg: audio/mp3
             else:
                 content_type = ''
             payload = {

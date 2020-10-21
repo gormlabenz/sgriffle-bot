@@ -9,6 +9,7 @@ def create_user():
 
     try:
         database_path = Path.cwd / 'app' / 'database.db'
+        print(database_path)
         os.remove(database_path)
     except:
         print('No database found')
