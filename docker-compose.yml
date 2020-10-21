@@ -3,11 +3,11 @@ version: "3"
 services:
   bot:
     build: ./
-    command: "gunicorn -w 9 -b 0.0.0.0:80 run:app"
+    command: "gunicorn -w 9 -b 0.0.0.0:5000 run:app"
     volumes:
       - ./:/usr/src/app
-    ports:
-      - 8080:80
+    expose:
+      - 5000
     restart: always
 
   nginx:
@@ -15,6 +15,6 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     ports:
-      - 80:80
+      - 1337:80
     depends_on:
       - bot
