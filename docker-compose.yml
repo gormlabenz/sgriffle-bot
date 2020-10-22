@@ -11,13 +11,19 @@ services:
     restart: always
 
   nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
+    image: nginx:1.15-alpine
     ports:
-      - 1337:443
+      - "80:80"
+      - "443:443"
     depends_on:
       - bot
     volumes:
-      - ./nginx/certs:/etc/ssl/private
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
       - ./nginx/config:/etc/nginx/conf.d
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
