@@ -16,5 +16,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - 1337:80
+      - 1338:443
     depends_on:
       - bot
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
