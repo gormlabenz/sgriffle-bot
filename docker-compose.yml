@@ -9,15 +9,3 @@ services:
     expose:
       - 5000
     restart: always
-
-  nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - bot
-    volumes:
-      - ./nginx/config:/etc/nginx/conf.d
