@@ -15,8 +15,8 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     ports:
-      - 1337:80
-      - 1338:443
+      - 1338:80
+      - 1337:443
     depends_on:
       - bot
     volumes:
