@@ -5,7 +5,7 @@ import shutil
 
 
 @app.cli.command("recreate-db")
-def create_user():
+def recreate_db():
 
     try:
         database_path = Path.cwd() / 'app' / 'database.db'
@@ -13,6 +13,16 @@ def create_user():
     except:
         print('No database found')
 
+    db.create_all()
+
+
+@app.cli.command("delete-pics")
+def delete_pics():
     pics_path = Path.cwd() / 'pics'
     [shutil.rmtree(pic) for pic in pics_path.glob('**/*')]
-    db.create_all()
+
+
+@app.cli.command("recreate")
+def recreate():
+    recreate_db()
+    delete_pics()
