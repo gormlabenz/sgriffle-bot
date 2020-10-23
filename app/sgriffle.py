@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-from flask.helpers import send_file
+from flask.helpers import flash, send_file
 import pyunsplash
 import requests
 import multiprocessing
@@ -11,9 +11,9 @@ import csv
 from app.messenger import *
 import itertools
 from app import bot
+import pprint
 
-env_path = Path('.') / '.env'
-load_dotenv(dotenv_path=env_path)
+load_dotenv()
 
 size = int(os.getenv('IMAGE_SIZE'))
 
@@ -59,7 +59,7 @@ def sg_get_images(topic):
     images = pu.search(
         type_='photos', query=topic, per_page=os.getenv('NUMBER_IMAGES_GENERATED'))
 
-    return images.entries
+    return list(images.entries)
 
 
 def sg_download_imgage(recipient_id, image):
@@ -192,9 +192,9 @@ def sg_edit_image(recipient_id, image, quote):
     image.paste(text_img, (0, 0), text_img)
     edited_image_path = f'{image_path}.edited.png'
     image.save(edited_image_path, 'PNG')
-
-    bot.send_image(
-        recipient_id, str(edited_image_path))
+    print('edited image respones')
+    pprint.pprint(bot.send_image(
+        recipient_id, str(edited_image_path)))
 
 
 def sg_edit_images(recipient_id, topic):
@@ -203,13 +203,13 @@ def sg_edit_images(recipient_id, topic):
 
     if not images:
         bot.send_text_message(
-            recipient_id, """Sorry, I didn't find enough images :( Try another more general topic!""")
+            recipient_id, """Sorry, I didn't found enough images :( Try another more general topic!""")
         return "Not enough images"
 
     sg_mkdir(recipient_id)
 
     processes = []
-    for image, quote in itertools.zip_longest(list(images), quotes):
+    for image, quote in itertools.zip_longest(images, quotes):
         if not image:
             return "edited all images"
         process = multiprocessing.Process(

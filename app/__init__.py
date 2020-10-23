@@ -5,8 +5,7 @@ from dotenv import load_dotenv
 import os
 from flask_sqlalchemy import SQLAlchemy
 
-env_path = Path('..') / '.env'
-load_dotenv(dotenv_path=env_path)
+load_dotenv()
 
 app = Flask(__name__)
 

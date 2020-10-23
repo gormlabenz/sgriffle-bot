@@ -1,4 +1,5 @@
 from app.messenger import *
+from app.database import *
 from app.sgriffle import sg_edit_images
 from app import app
 from flask import request
@@ -51,7 +52,9 @@ def receive_message_test():
                                 timestamp)
 
                 if message_check['type'] == 'edit_images':
-                    sg_edit_images(recipient_id, input_message)
+                    edit_images = sg_edit_images(recipient_id, input_message)
+                    if edit_images == "Not enough images":
+                        return "Not enough images"
                     # print(bot.send_button_message(recipient_id, 'What to do next?', [{
                     #    "type": "postback",
                     #    "payload": f"""{os.getenv('MESSAGE_COMMAND')}quote""",

@@ -3,9 +3,11 @@ version: "3"
 services:
   bot:
     build: ./
-    command: "gunicorn -w 9 -b 0.0.0.0:5000 run:app"
+    command: "gunicorn -w 9 -b 0.0.0.0:80 run:app"
+    #command: "python run.py"
+    #command: "twistd -n web --port tcp:80 --wsgi sgriffle.app"
     volumes:
       - ./:/usr/src/app
-    expose:
-      - 5000
+    ports:
+      - 80:80
     restart: always

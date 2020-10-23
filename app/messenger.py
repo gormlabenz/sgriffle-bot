@@ -2,12 +2,13 @@ from app.database import *
 from app.sgriffle import *
 from app import app, bot
 import os
+import pprint
 
 
 def send_message(recipient_id, response):
     # sends user the text message provided via input response parameter
     if response:
-        bot.send_text_message(recipient_id, response)
+        pprint.pprint(bot.send_text_message(recipient_id, response))
     return "success"
 
 

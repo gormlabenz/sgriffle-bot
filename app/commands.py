@@ -8,9 +8,8 @@ import shutil
 def create_user():
 
     try:
-        database_path = Path.cwd / 'app' / 'database.db'
-        print(database_path)
-        os.remove(database_path)
+        database_path = Path.cwd() / 'app' / 'database.db'
+        os.remove(str(database_path))
     except:
         print('No database found')
 
